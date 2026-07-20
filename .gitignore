@@ -1,0 +1,86 @@
+# ==========================
+# Dependencies
+# ==========================
+node_modules/
+
+# ==========================
+# Environment Variables
+# ==========================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ==========================
+# Logs
+# ==========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================
+# Runtime Data
+# ==========================
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ==========================
+# Coverage
+# ==========================
+coverage/
+.nyc_output/
+
+# ==========================
+# Build
+# ==========================
+dist/
+build/
+
+# ==========================
+# Temporary Files
+# ==========================
+tmp/
+temp/
+.cache/
+
+# ==========================
+# OS Files
+# ==========================
+.DS_Store
+Thumbs.db
+
+# ==========================
+# IDE
+# ==========================
+.vscode/
+.idea/
+
+# ==========================
+# Uploads
+# (Ignore only if files are generated at runtime)
+# ==========================
+uploads/
+public/uploads/
+
+# ==========================
+# Docker
+# ==========================
+.docker/
+
+# ==========================
+# PM2
+# ==========================
+.pm2/
+
+# ==========================
+# Misc
+# ==========================
+*.zip
+*.tar
+*.gz
