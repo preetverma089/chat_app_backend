@@ -12,6 +12,13 @@ const signUpValidation = Joi.object({
         .optional()
 });
 
+const loginValidation = Joi.object({
+    email: Joi.string().email().required(),
+
+    password: Joi.string().min(8).required()
+});
+
 module.exports = {
-    signUpValidation
+    signUpValidation,
+    loginValidation
 };

@@ -1,8 +1,8 @@
 const route = require('express').Router();
-const userController = require("../controllers/userController")
-const { signUpValidation } = require("../validations/userValidation")
+const { userSignUp, userLogin } = require("../controllers/userController")
+const { signUpValidation, loginValidation } = require("../validations/userValidation")
 const validate = require("../middlewares/validationMiddleware")
 
-route.post("/registerUser", validate(signUpValidation), userController.userSignUp)
-
+route.post("/registerUser", validate(signUpValidation), userSignUp)
+route.post("/loginUser", validate(loginValidation), userLogin)
 module.exports = route;
