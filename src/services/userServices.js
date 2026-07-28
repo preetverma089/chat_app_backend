@@ -1,10 +1,14 @@
 const User = require("../models/userModel");
+const userResetPassword = require("../models/userResetPassword")
 const ApiError = require("../utils/ApiError");
-const { hashPassword, comparePassword } = require("../helpers/helper");
+const { hashPassword, comparePassword, generateRandomtoken, hashedToken } = require("../helpers/helper");
 const { generateAccessToken, generateRefreshToken } = require("../helpers/authHelper")
 const RefreshToken = require("../models/refreshToken");
-const appConstants = require("../constants/app.constants");
+const { FRONTEND_URL } = require("../constants/app.constants")
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const path = require("path");
+const { sendForgotPasswordMail } = require("../helpers/emailHelper")
 const createUser = async (payload) => {
     const { fullName, email, password, role } = payload;
     const isExistingUser = await User.findOne({ email }).lean();
@@ -67,4 +71,34 @@ const loginUser = async (email, password) => {
         refreshToken,
     };
 };
-module.exports = { createUser, getUserByEmail, loginUser };
+
+const forgotPassword = async (email) => {
+    const user = await getUserByEmail(email);
+    let forgotPasswordTemplate = fs.readFileSync(path.join(__dirname, "../mailTemplates/forgotPassword.html"), "utf8")
+    const resetToken = generateRandomtoken();
+    const hashToken = hashedToken(resetToken);
+    await saveResetToken(user._id, hashToken);
+    const resetLink =
+        `${FRONTEND_URL}/reset-password?token=${resetToken}`;
+    forgotPasswordTemplate = forgotPasswordTemplate
+        .replace("{{USER_NAME}}", user.fullName)
+        .replaceAll("{{RESET_LINK}}", resetLink);
+    await sendForgotPasswordMail({
+        to: user.email,
+        subject: "Reset Password",
+        html: forgotPasswordTemplate,
+        text: "Reset your password",
+    })
+    return {
+        message: "Password reset email sent successfully."
+    };
+}
+
+const saveResetToken = async (userId, token) => {
+    await userResetPassword.deleteMany({ userId, });
+    const expiresAt = new Date(
+        Date.now() + 15 * 60 * 1000
+    );
+    return userResetPassword.create({ userId, token, expiresAt })
+}
+module.exports = { createUser, getUserByEmail, loginUser, forgotPassword };

@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 
 
@@ -12,4 +13,12 @@ const comparePassword = async (payload, hashedPassword) => {
     return isMatch;
 }
 
-module.exports = { hashPassword, comparePassword };
+const generateRandomtoken = () => {
+    return crypto.randomBytes(32).toString("hex");
+}
+const hashedToken = (token) => {
+    return crypto.createHash("sha256")
+        .update(token)
+        .digest("hex");
+}
+module.exports = { hashPassword, comparePassword, generateRandomtoken, hashedToken };

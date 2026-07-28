@@ -19,4 +19,12 @@ const userLogin = asyncHandler(async (req, res) => {
 
 })
 
-module.exports = { userSignUp, userLogin };
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    const user = await userServices.forgotPassword(email);
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "Password reset link sent successfully", user));
+})
+
+module.exports = { userSignUp, userLogin, forgotPassword };
