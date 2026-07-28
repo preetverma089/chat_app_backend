@@ -33,4 +33,10 @@ const forgotUserPassword = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, user.message))
 })
 
-module.exports = { userSignUp, userLogin, sendForgotPasswordLink, forgotUserPassword };
+const getUserProfile = asyncHandler(async (req, res) => {
+    const { id } = req.user;
+    const user = await userServices.getUserById(id);
+    return res.status(200).json(new ApiResponse(200, "User Details fetched Succesfully", user))
+})
+
+module.exports = { userSignUp, userLogin, sendForgotPasswordLink, forgotUserPassword, getUserProfile };

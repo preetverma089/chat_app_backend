@@ -120,4 +120,12 @@ const resetPassword = async (token, password) => {
         message: "Password updated successfully."
     }
 }
-module.exports = { createUser, getUserByEmail, loginUser, forgotPassword, resetPassword };
+
+const getUserById = async (id) => {
+    const userDetail = await User.findById(id).lean();
+    if (!userDetail) {
+        throw new ApiError(404, "user not found");
+    }
+    return userDetail;
+}
+module.exports = { createUser, getUserByEmail, loginUser, forgotPassword, resetPassword, getUserById };
