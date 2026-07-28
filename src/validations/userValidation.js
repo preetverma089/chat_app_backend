@@ -18,7 +18,17 @@ const loginValidation = Joi.object({
     password: Joi.string().min(8).required()
 });
 
+const sendforgotPasswordLinkValidation = Joi.object({
+    email: Joi.string().email().required(),
+});
+
+const forgotPasswordValidation = Joi.object({
+    password: Joi.string().min(8).required(),
+    token: Joi.string().required()
+});
 module.exports = {
     signUpValidation,
-    loginValidation
+    loginValidation,
+    forgotPasswordValidation,
+    sendforgotPasswordLinkValidation
 };
