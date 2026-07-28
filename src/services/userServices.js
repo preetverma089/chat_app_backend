@@ -101,4 +101,23 @@ const saveResetToken = async (userId, token) => {
     );
     return userResetPassword.create({ userId, token, expiresAt })
 }
-module.exports = { createUser, getUserByEmail, loginUser, forgotPassword };
+
+const resetPassword = async (token, password) => {
+    const hashedResetToken = hashedToken(token);
+    const tokenDetails = await userResetPassword.findOne({ token: hashedResetToken, expiresAt: { $gt: new Date() } });
+    if (!tokenDetails) {
+        throw new ApiError(401, "Invalid or expired reset token");
+    }
+    const hashedPassword = await hashPassword(password);
+    await User.findByIdAndUpdate(tokenDetails.userId, { password: hashedPassword });
+    await userResetPassword.deleteOne({
+        _id: tokenDetails._id,
+    });
+    await RefreshToken.deleteMany({
+        userId: tokenDetails.userId,
+    });
+    return {
+        message: "Password updated successfully."
+    }
+}
+module.exports = { createUser, getUserByEmail, loginUser, forgotPassword, resetPassword };
