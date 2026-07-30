@@ -3,6 +3,7 @@ const asyncHandler = require("../utils/asyncHandler");
 const userServices = require("../services/userServices");
 const ApiResponse = require("../utils/ApiResponse");
 
+
 const userSignUp = asyncHandler(async (req, res) => {
     const user = await userServices.createUser(req.body);
     return res
@@ -38,5 +39,10 @@ const getUserProfile = asyncHandler(async (req, res) => {
     const user = await userServices.getUserById(id);
     return res.status(200).json(new ApiResponse(200, "User Details fetched Succesfully", user))
 })
+const searchUser = asyncHandler(async (req, res) => {
+    const { search } = req.query;
+    const users = await userServices.searchUsers(search, req.user.id);
+    return res.status(200).json(new ApiResponse(200, "Users fetched sucesfully", users))
+})
 
-module.exports = { userSignUp, userLogin, sendForgotPasswordLink, forgotUserPassword, getUserProfile };
+module.exports = { userSignUp, userLogin, sendForgotPasswordLink, forgotUserPassword, getUserProfile, searchUser };
