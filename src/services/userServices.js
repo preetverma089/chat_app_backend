@@ -1,14 +1,28 @@
 const User = require("../models/userModel");
-const userResetPassword = require("../models/userResetPassword")
+const userResetPassword = require("../models/userResetPassword");
 const ApiError = require("../utils/ApiError");
-const { hashPassword, comparePassword, generateRandomtoken, hashedToken } = require("../helpers/helper");
-const { generateAccessToken, generateRefreshToken } = require("../helpers/authHelper")
+const { searchUsersKey } = require("../helpers/cacheKey")
+const {
+    hashPassword,
+    comparePassword,
+    generateRandomtoken,
+    hashedToken,
+} = require("../helpers/helper");
+const {
+    generateAccessToken,
+    generateRefreshToken,
+} = require("../helpers/authHelper");
 const RefreshToken = require("../models/refreshToken");
-const { FRONTEND_URL } = require("../constants/app.constants")
+const { FRONTEND_URL } = require("../constants/app.constants");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
-const { sendForgotPasswordMail } = require("../helpers/emailHelper")
+const { sendForgotPasswordMail } = require("../helpers/emailHelper");
+const redisClient = require("../config/redis");
+const { getCache, setCache } = require("../helpers/redisHelper")
+const CACHE_TTL = {
+    SEARCH_USERS: 300,
+};
 const createUser = async (payload) => {
     const { fullName, email, password, role } = payload;
     const isExistingUser = await User.findOne({ email }).lean();
@@ -38,10 +52,7 @@ const getUserByEmail = async (email) => {
 const loginUser = async (email, password) => {
     const user = await getUserByEmail(email);
 
-    const isPasswordValid = await comparePassword(
-        password,
-        user.password
-    );
+    const isPasswordValid = await comparePassword(password, user.password);
 
     if (!isPasswordValid) {
         throw new ApiError(401, "Invalid password");
@@ -74,12 +85,14 @@ const loginUser = async (email, password) => {
 
 const forgotPassword = async (email) => {
     const user = await getUserByEmail(email);
-    let forgotPasswordTemplate = fs.readFileSync(path.join(__dirname, "../mailTemplates/forgotPassword.html"), "utf8")
+    let forgotPasswordTemplate = fs.readFileSync(
+        path.join(__dirname, "../mailTemplates/forgotPassword.html"),
+        "utf8",
+    );
     const resetToken = generateRandomtoken();
     const hashToken = hashedToken(resetToken);
     await saveResetToken(user._id, hashToken);
-    const resetLink =
-        `${FRONTEND_URL}/reset-password?token=${resetToken}`;
+    const resetLink = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
     forgotPasswordTemplate = forgotPasswordTemplate
         .replace("{{USER_NAME}}", user.fullName)
         .replaceAll("{{RESET_LINK}}", resetLink);
@@ -88,28 +101,31 @@ const forgotPassword = async (email) => {
         subject: "Reset Password",
         html: forgotPasswordTemplate,
         text: "Reset your password",
-    })
+    });
     return {
-        message: "Password reset email sent successfully."
+        message: "Password reset email sent successfully.",
     };
-}
+};
 
 const saveResetToken = async (userId, token) => {
-    await userResetPassword.deleteMany({ userId, });
-    const expiresAt = new Date(
-        Date.now() + 15 * 60 * 1000
-    );
-    return userResetPassword.create({ userId, token, expiresAt })
-}
+    await userResetPassword.deleteMany({ userId });
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    return userResetPassword.create({ userId, token, expiresAt });
+};
 
 const resetPassword = async (token, password) => {
     const hashedResetToken = hashedToken(token);
-    const tokenDetails = await userResetPassword.findOne({ token: hashedResetToken, expiresAt: { $gt: new Date() } });
+    const tokenDetails = await userResetPassword.findOne({
+        token: hashedResetToken,
+        expiresAt: { $gt: new Date() },
+    });
     if (!tokenDetails) {
         throw new ApiError(401, "Invalid or expired reset token");
     }
     const hashedPassword = await hashPassword(password);
-    await User.findByIdAndUpdate(tokenDetails.userId, { password: hashedPassword });
+    await User.findByIdAndUpdate(tokenDetails.userId, {
+        password: hashedPassword,
+    });
     await userResetPassword.deleteOne({
         _id: tokenDetails._id,
     });
@@ -117,9 +133,9 @@ const resetPassword = async (token, password) => {
         userId: tokenDetails.userId,
     });
     return {
-        message: "Password updated successfully."
-    }
-}
+        message: "Password updated successfully.",
+    };
+};
 
 const getUserById = async (id) => {
     const userDetail = await User.findById(id).lean();
@@ -127,5 +143,41 @@ const getUserById = async (id) => {
         throw new ApiError(404, "user not found");
     }
     return userDetail;
-}
-module.exports = { createUser, getUserByEmail, loginUser, forgotPassword, resetPassword, getUserById };
+};
+const searchUsers = async (text, loggedInUserId) => {
+    const cacheKey = searchUsersKey(loggedInUserId, text)
+    const cacheUsers = await getCache(cacheKey)
+    if (cacheUsers) {
+        console.log("✅ Redis Cache HIT");
+        return cacheUsers;
+    }
+    console.log("❌ Redis Cache MISS");
+    const users = await User.find({
+        _id: { $ne: loggedInUserId },
+        $or: [
+            {
+                fullName: {
+                    $regex: text,
+                    $options: "i",
+                },
+            },
+            {
+                email: {
+                    $regex: text,
+                    $options: "i",
+                },
+            },
+        ],
+    }).select("fullName email").lean();
+    await setCache(cacheKey, users, CACHE_TTL.SEARCH_USERS);
+    return users;
+};
+module.exports = {
+    createUser,
+    getUserByEmail,
+    loginUser,
+    forgotPassword,
+    resetPassword,
+    getUserById,
+    searchUsers,
+};

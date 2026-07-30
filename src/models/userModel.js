@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema({
         default: "personal"
     },
 }, { timestamps: true, versionKey: false })
+userSchema.index({ fullName: 1 });
 const User = mongoose.model("User", userSchema)
 
 module.exports = User;

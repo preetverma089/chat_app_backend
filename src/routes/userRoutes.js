@@ -1,6 +1,6 @@
 const route = require('express').Router();
-const { userSignUp, userLogin, sendForgotPasswordLink, forgotUserPassword, getUserProfile } = require("../controllers/userController")
-const { signUpValidation, loginValidation, sendforgotPasswordLinkValidation, forgotPasswordValidation } = require("../validations/userValidation")
+const { userSignUp, userLogin, sendForgotPasswordLink, forgotUserPassword, getUserProfile, searchUser } = require("../controllers/userController")
+const { signUpValidation, loginValidation, sendforgotPasswordLinkValidation, forgotPasswordValidation, searchUsers } = require("../validations/userValidation")
 const validate = require("../middlewares/validationMiddleware")
 const authMiddleware = require("../middlewares/authMiddleware")
 route.post("/registerUser", validate(signUpValidation), userSignUp)
@@ -10,5 +10,5 @@ route.post("/forgotPassword", validate(forgotPasswordValidation), forgotUserPass
 
 // protected Routes
 route.get("/profile", authMiddleware, getUserProfile)
-
+route.get("/getUsers", authMiddleware, validate(searchUsers), searchUser)
 module.exports = route;
