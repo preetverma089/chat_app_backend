@@ -1,4 +1,3 @@
-const userModel = require("../models/userModel");
 const asyncHandler = require("../utils/asyncHandler");
 const userServices = require("../services/userServices");
 const ApiResponse = require("../utils/ApiResponse");
