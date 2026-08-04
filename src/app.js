@@ -1,6 +1,7 @@
 const express = require("express");
 
 const userRoutes = require("./routes/userRoutes");
+const conversationRoutes = require("./routes/conversationRoutes")
 const errorHandler = require("./middlewares/errorMiddleware");
 
 const app = express();
@@ -19,7 +20,7 @@ app.get("/health", (req, res) => {
 
 // Routes
 app.use("/api/users", userRoutes);
-
+app.use("/api/chat", conversationRoutes)
 // 404 Middleware
 app.use((req, res) => {
     res.status(404).json({
