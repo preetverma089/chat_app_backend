@@ -28,5 +28,33 @@ const findOrCreateConversation = async (senderId, receiverId) => {
     return await createDirectConversation(senderId, receiverId);
 }
 
+const findAllConversationList = async (senderId) => {
+    const conversationList = await conversationModel.find({
+        participants: senderId
+    }).populate(
+        "participants",
+        "fullName email profilePicture"
+    ).populate(
+        "lastMessage",
+        "message messageType createdAt"
+    ).sort({
+        lastMessageAt: -1,
+    }).lean();
 
-module.exports = { findOrCreateConversation }
+    const response = conversationList.map((user) => {
+        const otherParticipants = user.participants.find((item) => {
+            return item._id.toString() !== senderId.toString();
+        })
+        return {
+            _id: user._id,
+            type: user.type,
+            participant: otherParticipants,
+            lastMessage: user.lastMessage,
+            lastMessageAt: user.lastMessageAt,
+        };
+    })
+    return response;
+}
+
+
+module.exports = { findOrCreateConversation, findAllConversationList }
