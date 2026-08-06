@@ -10,5 +10,5 @@ route.post("/forgotPassword", validate(forgotPasswordValidation), forgotUserPass
 
 // protected Routes
 route.get("/profile", authMiddleware, getUserProfile)
-route.get("/getUsers", authMiddleware, validate(searchUsers), searchUser)
+route.get("/getUsers", authMiddleware, validate(searchUsers, "query"), searchUser)
 module.exports = route;

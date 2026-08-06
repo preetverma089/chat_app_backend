@@ -62,7 +62,7 @@ const findConversationbyId = async (conversationId) => {
     return conversationDetail;
 }
 
-const isParticipants = (conversations, senderId) => {
+const isParticipant = (conversations, senderId) => {
     return conversations.participants.some(
         (participant) => participant.toString() === senderId.toString()
     );
@@ -71,4 +71,4 @@ const updateLastMessage = async (conversationId, currentMessageDetail) => {
     await conversationModel.findByIdAndUpdate(conversationId, { lastMessage: currentMessageDetail._id, lastMessageAt: currentMessageDetail.createdAt });
 }
 
-module.exports = { findOrCreateConversation, findAllConversationList, findConversationbyId, isParticipants, updateLastMessage }
+module.exports = { findOrCreateConversation, findAllConversationList, findConversationbyId, isParticipant, updateLastMessage }

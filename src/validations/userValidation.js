@@ -27,7 +27,11 @@ const forgotPasswordValidation = Joi.object({
     token: Joi.string().required()
 });
 const searchUsers = Joi.object({
-    search: Joi.string().trim().required()
+    search: Joi.string()
+        .trim()
+        .min(1)
+        .max(50)
+        .required(),
 });
 module.exports = {
     signUpValidation,

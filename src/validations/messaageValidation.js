@@ -5,7 +5,7 @@ const sendMessagageValidation = Joi.object({
     conversationId: Joi.string()
         .required()
         .custom((value, helpers) => {
-            if (!mongoose.Types.ObjectId.isValid(value)) { // basically ye check krta h recieverId ko mongoDb object id me convert kr skte h ya nhi
+            if (!mongoose.Types.ObjectId.isValid(value)) { // basically ye check krta h conversationId ko mongoDb object id me convert kr skte h ya nhi
                 return helpers.message("Invalid conversationId");
             }
             return value;
@@ -22,4 +22,16 @@ const sendMessagageValidation = Joi.object({
         .required(),
 });
 
-module.exports = { sendMessagageValidation }
+const getMessagesValidation = Joi.object({
+    conversationId: Joi.string()
+        .required()
+        .custom((value, helpers) => {
+            if (!mongoose.Types.ObjectId.isValid(value)) {
+                return helpers.message("Invalid conversationId");
+            }
+            return value;
+        }),
+})
+
+
+module.exports = { sendMessagageValidation, getMessagesValidation }
