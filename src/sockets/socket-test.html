@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket Test</title>
+  </head>
+  <body>
+    <h1>Socket Test</h1>
+
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+
+    <script>
+      const socket = io("http://localhost:4100", {
+        auth: {
+          token:
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNWZjNmUzYTFjOTk3Mzg0M2MzZWE1ZSIsInJvbGUiOiJwZXJzb25hbCIsImlhdCI6MTc4NjIxNzMwMiwiZXhwIjoxNzg2MjE4MjAyfQ.KZfuBOucJ7R1ropphz6aeT4Aui8bNdcoiKjaaVlBITE",
+        },
+      });
+
+      socket.on("connect", () => {
+        console.log("Connected:", socket.id);
+
+        socket.emit("join_conversation", {
+          conversationId: "6a723594d19c7dbfaed55fd7",
+        });
+      });
+
+      socket.on("conversation_joined", (data) => {
+        console.log("✅ Conversation joined:", data);
+        socket.emit("send_message", {
+          conversationId: "6a723594d19c7dbfaed55fd7",
+          message: "Hiii Prince",
+          messageType: "text",
+        });
+      });
+      socket.on("new_message", (message) => {
+        console.log("📩 New message:", message);
+      });
+      socket.on("socket_error", (error) => {
+        console.log("❌ Socket error:", error.message);
+      });
+    </script>
+  </body>
+</html>
