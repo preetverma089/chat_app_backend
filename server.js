@@ -1,15 +1,24 @@
 const app = require("./src/app")
+const http = require("http");
+const { Server } = require("socket.io");
 const { PORT } = require('./src/constants/app.constants')
 const connectDB = require("./src/config/db.config")
-const errorHandler = require("./src/middlewares/errorMiddleware")
-const userRoutes = require("./src/routes/userRoutes")
 const { verifyTransporter } = require("./src/helpers/emailHelper")
 const { redisConfig } = require("./src/helpers/redisHelper")
-app.use("/api/users", userRoutes);
-app.use(errorHandler);
+const socketHandler = require("./src/sockets/socket");
 connectDB();
 redisConfig();
 verifyTransporter();
-app.listen(PORT, () => {
+const server = http.createServer(app);
+// app.listen(PORT, () => {
+//     console.log(`Server is starting at port ${PORT}`);
+// })
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+    },
+});
+socketHandler(io);
+server.listen(PORT, () => {
     console.log(`Server is starting at port ${PORT}`);
-})
+});
