@@ -1,9 +1,11 @@
 const express = require("express");
+const swaggerUi = require("swagger-ui-express");
 
 const userRoutes = require("./routes/userRoutes");
 const conversationRoutes = require("./routes/conversationRoutes")
 const messageRoutes = require("../src/routes/messageRoutes")
 const errorHandler = require("./middlewares/errorMiddleware");
+const swaggerSpec = require("./config/swagger.config");
 
 const app = express();
 
@@ -17,6 +19,15 @@ app.get("/health", (req, res) => {
         success: true,
         message: "Server is healthy"
     });
+});
+
+// API Documentation
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: "Chat App Backend API Docs",
+}));
+app.get("/api-docs.json", (req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    res.send(swaggerSpec);
 });
 
 // Routes
