@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
 
 const userRoutes = require("./routes/userRoutes");
@@ -10,6 +11,7 @@ const swaggerSpec = require("./config/swagger.config");
 const app = express();
 
 // Middlewares
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
